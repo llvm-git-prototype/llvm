@@ -1,0 +1,58 @@
+name: LibCXX builds
+
+on: [push]
+
+jobs:
+  test_libcxx:
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - ubuntu18.04-clang8-cxx03
+          - ubuntu18.04-clang8-cxx11
+          - macos10.14-xcode11-cxx11
+        include:
+          - name: ubuntu18.04-clang8-cxx03
+            os: ubuntu-18.04
+            compiler: clang
+            compiler-version: 8
+            cxx-std: c++03
+          - name: ubuntu18.04-clang8-cxx11
+            os: ubuntu-18.04
+            compiler: clang
+            compiler-version: 8
+            cxx-std: c++11
+          - name: macos10.14-xcode11-cxx11
+            os: macos-10.14
+            compiler: xcode
+            compiler-version: 11
+            cxx-std: c++11
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Install deps
+        shell: bash
+        run: .github/workflows/utils/install_deps.sh ${{ runner.os }} ${{ matrix.compiler }} ${{ matrix.compiler-version }}
+      - name: configure
+        shell: bash
+        run: |
+          echo $PATH
+          mkdir build
+          cd build
+          cmake -GNinja \
+                -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi;libunwind" \
+                -DLLVM_LIT_ARGS="-sv --show-unsupported --show-xfail --param=std=${{ matrix.cxx-std }}" \
+                ../llvm
+      - name: build libcxxabi
+        run: ninja -C build cxxabi
+      - name: build libcxxabi
+        run: ninja -C build cxx
+      - name: test libcxxabi
+        run: ninja -C build check-libcxxabi
+      - name: test libcxx
+        run: ninja -C build check-libcxx
+#      - name: test abilist
+#        run: ninja -C build check-cxx-abilist
