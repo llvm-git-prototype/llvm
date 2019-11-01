@@ -1,0 +1,12 @@
+name: Backup force-pushed refs
+on: [push]
+
+jobs:
+  backup_ref:
+    steps:
+      - name: run
+        run: |
+          echo forced: ${{ github.event.forced }}
+          echo ref: ${{ github.ref }}
+          echo before: ${{ github.event.before }}
+          echo sha: ${{ github.event.sha }}
