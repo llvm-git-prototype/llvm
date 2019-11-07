@@ -6,16 +6,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: run
+        env:
+          is_forced: ${{ github.event.forced }}
+          previous_sha: ${{ github.event.before }}
         run: |
-          echo forced: ${{ github.event.forced }}
-          echo ref: ${{ github.ref }}
-          echo before: ${{ github.event.before }}
-          echo after: ${{ github.event.after }}
-          curl --request POST \
-               --url https://api.github.com/repos/${{ github.repository }}/git/refs \
+          echo forced: ${is_forced}
+          echo ref: $GITHUB_REF
+          echo before: ${before_sha}
+          echo after: $GITHUB_SHA
+          curl -i --request POST \
+               --url https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs \
                --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                --header 'content-type: application/json' \
-               --data '{
-               "ref": "refs/gh-backup/${{ github.ref }}/${{ github.event.before }}",
-               "sha": "${{ github.event.before }}"
-               }'
+               --data "{
+               \"ref\": \"refs/gh-backup/${GITHUB_REF}/${previous_sha}\",
+               \"sha\": \"${before_sha}\"
+               }"
