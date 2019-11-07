@@ -16,6 +16,6 @@ jobs:
                --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                --header 'content-type: application/json' \
                --data '{
-               "ref": "refs/gh-backup/${{ github.ref }}/${{ github.event.before }}"
+               "ref": "refs/gh-backup/${{ github.ref }}/${{ github.event.before }}",
                "sha": "${{ github.event.before }}"
                }'
