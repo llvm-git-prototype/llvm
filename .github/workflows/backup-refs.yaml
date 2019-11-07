@@ -12,13 +12,13 @@ jobs:
         run: |
           echo forced: ${is_forced}
           echo ref: $GITHUB_REF
-          echo before: ${before_sha}
+          echo before: ${previous_sha}
           echo after: $GITHUB_SHA
-          curl -i --request POST \
+          curl --request POST \
                --url https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs \
                --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                --header 'content-type: application/json' \
                --data "{
-               \"ref\": \"refs/gh-backup/${GITHUB_REF}/${previous_sha}\",
-               \"sha\": \"${before_sha}\"
+               \"ref\": \"refs/gh-backup/${GITHUB_REF#refs/}/${previous_sha}\",
+               \"sha\": \"${previous_sha}\"
                }"
