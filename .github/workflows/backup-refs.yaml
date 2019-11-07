@@ -10,28 +10,12 @@ jobs:
           echo forced: ${{ github.event.forced }}
           echo ref: ${{ github.ref }}
           echo before: ${{ github.event.before }}
-          echo sha: ${{ github.event.sha }}
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+          echo after: ${{ github.event.after }}
+          curl --request POST \
+               --url https://api.github.com/repos/${{ github.repository }}/git/refs \
+               --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+               --header 'content-type: application/json' \
+               --data '{
+               "ref": "refs/gh-backup/${{ github.ref }}/${{ github.event.before }}"
+               "sha": "${{ github.event.before }}"
+               }'
