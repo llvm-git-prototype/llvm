@@ -3,6 +3,7 @@ on: [push]
 
 jobs:
   backup_ref:
+    if: github.event.forced
     runs-on: ubuntu-latest
     steps:
       - name: run
