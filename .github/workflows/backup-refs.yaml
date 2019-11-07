@@ -14,7 +14,8 @@ jobs:
           echo ref: $GITHUB_REF
           echo before: ${previous_sha}
           echo after: $GITHUB_SHA
-          curl --request POST \
+          curl -f -s -S -o /dev/null \
+               --request POST \
                --url https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs \
                --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                --header 'content-type: application/json' \
