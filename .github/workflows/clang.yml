@@ -1,0 +1,60 @@
+name: Clang builds
+
+on: [push]
+
+jobs:
+  test_clang:
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - ubuntu18.04-gcc5
+          - ubuntu18.04-clang8
+          - ubuntu18.04-clang8
+          - win2019-clang
+          - macos10.14-xcode11
+        include:
+          - name: ubuntu18.04-gcc5
+            os: ubuntu-18.04
+            compiler: gcc
+            compiler-version: 5
+          - name: ubuntu18.04-clang8
+            os: ubuntu-18.04
+            compiler: clang
+            compiler-version: 8
+          - name: win2019-clang
+            os: windows-2019
+            compiler: clang
+            compiler-version: latest
+          - name: macos10.14-xcode11
+            os: macos-10.14
+            compiler: xcode
+            compiler-version: 11
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Install deps
+        shell: bash
+        run: .github/workflows/utils/install_deps.sh ${{ runner.os }} ${{ matrix.compiler }} ${{ matrix.compiler-version }}
+      - if: runner.os == 'Linux'
+        run: echo "::set-env name=extra_cmake_args::-DLLVM_USE_LINKER=gold"
+      - name: configure
+        shell: bash
+        run: |
+          mkdir build
+          cd build
+          cmake -GNinja \
+                -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DLLVM_ENABLE_ASSERTIONS:BOOL=ON \
+                ${extra_cmake_args:-} \
+                ../llvm
+      - name: build
+        run: ninja -C build
+      - name: test
+        run: ninja -C build check
+      - name: test-clang
+        run: ninja -C build check-clang
